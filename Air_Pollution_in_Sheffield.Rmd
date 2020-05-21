@@ -1,0 +1,186 @@
+---
+output:
+  html_document:
+    theme: journal
+
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+# **Air Pollution in Sheffield**
+***
+Hala Al-Jarah
+<br><br><br>
+
+
+### **Introduction**
+***
+
+##### ***Background***
+Air pollution is a rapidly growing global public health emergency. Levels of particulates (harmful invisible tiny solids that float in the air) are exceeding “safe” levels in 91% of the world’s population, and Sheffield is not exempt from this.
+
+Sheffield is one of the top 10 most polluted spots in Britain, and experiences 20% over the “safe" level of exposure to fine particulate matter pollution. This causes many cardiovascular and respiratory problems, and 500 people in Sheffield die each year because of it.
+
+<br>
+
+##### ***Research Questions***
+
+According to the [Sheffield CC Air Pollution Monitoring Data Presentation Site](http://87.242.194.203/cgi-bin/SHEFF/apub.stncolmap2.cgi?page=ShowMapG&areaid=RI&gsize=450x370&stnshow=true&stngroup=0x4e&backgroundimg=images/blank.gif&mappostop=0&mapposleft=0&infocgi=apub.infostn2.cgi&macropath=stn&infoframe=_blank&lefthtmlpage=&apptag=colorstn&nrdec=1&subs=0003&year=now&gkey=AIzaSyBF-Ob8flZlLC2tcHARIUQ_9EYHPuSMwcs), the main pollutants of concern in Sheffield are:
+
+* Nitrogen dioxide (NO2)
+* Fine particulate matter (PM2.5)
+  
+Therefore the levels of the specific pollutants NO2 and PM2.5 are visualised for this project, particularly looking at *where* in Sheffield these levels are highest, and *when* these levels are highest.
+
+<br><br><br>
+
+### **Data and Visualisations**
+***
+##### ***1 - Locating Air Pollution Hotspots***
+
+[Sheffield CC Air Pollution Monitoring Data Presentation Site](http://87.242.194.203/cgi-bin/SHEFF/apub.stncolmap2.cgi?page=ShowMapG&areaid=RI&gsize=450x370&stnshow=true&stngroup=0x4e&backgroundimg=images/blank.gif&mappostop=0&mapposleft=0&infocgi=apub.infostn2.cgi&macropath=stn&infoframe=_blank&lefthtmlpage=&apptag=colorstn&nrdec=1&subs=0003&year=now&gkey=AIzaSyBF-Ob8flZlLC2tcHARIUQ_9EYHPuSMwcs) shows air pollution data from all of Sheffield's 5 automatic monitoring stations. Initial data was collected across all 5 monitoring stations by selecting each site and recording the average maximum score for both NO2 and PM2.5.
+
+<br>
+
+*Data Origins From Air Pollution Monitoring Stations*
+
+These are the following average maximum scores recorded at different stations on an average day for NO2 and PM2.5:
+
+```{r eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE, fig.cap="*Figure 1:average maximum scores recorded on an average day for NO2 and PM2.5*"}
+
+#loading data
+Data1.1<- read.csv("Data/Data1.1.csv")
+head(Data1.1)
+
+#visualising data
+library(tidyverse)
+Data1.2<- read.csv("Data/Data1.2.csv")
+ggplot(data = Data1.2, aes(fill=Pollutant, x=Location, y=Pollutant_Level)) + 
+  geom_bar(position = "dodge", stat = "identity") + 
+  labs(y= "Pollutant Levels") + 
+  ggtitle("Pollutant Levels Across Sheffield") + 
+  scale_fill_manual(values=c("#42A5F5", "#66BB6A")) + 
+  theme_light(base_size = 7) +
+  theme(panel.grid.major.x = element_blank(), panel.grid.major.y = element_line( size=.1, color="light grey")) +
+  expand_limits(y=25)
+
+```
+
+<br><br>
+
+From visualising this data, it is clear that monitors at locations GH2, GH3, and GH4 produce a higher maximum score for both pollutants than those in surrounding areas. Upon identifying these locations on a map, it is apparent these monitors are located on the ring road and by the M1. 
+
+This would therefore suggest that high traffic areas are hotspots for this type of air pollution. 
+
+Now that *where* these levels of NO2 and PM2.5 are highest have been identified, we can now look at what is happening at these 3 hotspots in more detail, to see *when* these levels are highest.
+
+<br><br>
+
+##### ***2- Air Pollution Across Time***
+[The Department for Environment Food & Rural Affairs](https://uk-air.defra.gov.uk/) states air pollution in parts of Sheffield last April (2019) was double the legal limit. We can use April as an example to look at what is happening at these hotspots in more detail. 
+
+<br>
+
+*Preparing Data showing average pollutant levels over 24 hours*
+
+These are the levels of pollutants NO2, and PM2.5 across an average 24 hours in April:
+
+```{r eval=TRUE, echo=TRUE, warning=FALSE}
+
+
+#loading data for NO2
+Data2 <- read.csv("Data/Data2.csv")
+head(Data2)
+
+```
+
+```{r results='hold'}
+
+#preparing data for NO2
+names(Data2)
+colnames(Data2) <- c("Time", "GH2", "GH3", "GH4") #changing column names as they originally contained dashes
+df2 <- Data2 %>% #creating a new dataset
+  gather(key = "variable", value = "value", -Time) #creating a new column to gather values (apart from time)
+head(df2)
+```
+
+
+```{r}
+#loading data for PM2.5
+Data3 <- read.csv("Data/Data3.csv")
+head(Data3)
+```
+
+
+```{r results='hold'}
+#preparing data for PM2.5
+names(Data3)
+colnames(Data3) <- c("Time", "GH2", "GH3", "GH4") #changing column names as they originally contained dashes
+df3 <- Data3 %>% #creating a new dataset
+  gather(key = "variable", value = "value", -Time) #creating a new column to gather values (apart from time)
+head(df3)
+
+```
+
+<br>
+
+*Visualising Data showing average pollutant levels over 24 hours*
+
+```{r eval=TRUE, echo=TRUE, warning=FALSE, out.width=c('50%', '50%'), fig.show='hold'}
+
+#visualising NO2 data
+ggplot(df2, aes(x = Time, y = value)) +
+  geom_line(aes(color = variable), size = 1) +
+  scale_color_manual(values = c("#90CAF9", "#42A5F5", "#1565C0"))+
+  expand_limits(y=35) +
+  theme_light(base_size = 10) +
+  
+  ggtitle("Average level of NO2 over 24 hours") + 
+  scale_x_continuous(name="Time", breaks= seq(0, 24, 1)) +
+  scale_y_continuous(name="NO2 Levels (ppb)", breaks= seq(0, 35, 5)) +
+  
+  theme(legend.position="bottom")+
+  labs(col="Location")
+
+#visualising PM2.5 data
+ggplot(df3, aes(x = Time, y = value)) +
+  geom_line(aes(color = variable), size = 1) +
+  scale_color_manual(values = c("#AED581", "#66BB6A", "#1B5E20"))+
+  expand_limits(y=55) +
+  theme_light(base_size = 10) +
+  
+  ggtitle("Average level of PM2.5 over 24 hours") + 
+  scale_x_continuous(name="Time", breaks= seq(0, 24, 1)) +
+  scale_y_continuous(name="PM2.5 Levels (ug/m3)", breaks= seq(0, 55, 5)) +
+  
+  theme(legend.position="bottom") +
+  labs(col="Location")
+
+```
+
+<br>
+
+Upon visualising this data, it is clear that there are peaks in pollutant levels during rush hour-times where there is likely to be high traffic. Although this pattern is much stronger for NO2 than PM2.5, this still shows that not only is air pollution localised at vehicle hotspots, but these air pollution levels peak during high traffic, suggesting this type of air pollution could be caused by vehicle emissions. 
+<br><br><br>
+
+### **Summary**
+***
+<br>
+After exploring this data, one might conlcude that vehicle emissions play a large role in the air pollution problem in Sheffield (due to the higher pollution levels recorded near busier roads, which peak during high traffic). 
+
+<br>
+
+Perhaps an interesting way to futher these findings would be to correlate number of vehicles with pollutant levels, to ensure the pattern observed in the second graphs is specifically related to high traffic and not a confound that concerns the time of day in a different way.
+
+<br>
+
+Another interesting angle could be to compare average scores from April 2019 (as shown), with April 2020, following UK COVID lockdown rules, and explore whether air pollution levels have decreased.
+
+<br>
+
+This data could also be compared against diferent cities in the UK.
+
+<br><br><br>
